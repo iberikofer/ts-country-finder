@@ -1,1 +1,65 @@
-<!DOCTYPE html><html lang="en"><head><link rel="stylesheet" href="/js-country-finder/index.9e0ecc89.css"><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Find country you want!</title></head><body> <h1 class="main_title">What country do you want to know more?</h1> <input type="text" id="search-box" placeholder="Type a country" autofocus> <ul class="country-list"></ul> <div class="country-info"></div> <script src="/js-country-finder/index.360bd9b3.js" type="module"></script><script src="/js-country-finder/index.5712bdb1.js" nomodule defer></script> </body></html>
+<!DOCTYPE html><html lang=en><meta charset=UTF-8><meta name=viewport content="width=device-width, initial-scale=1.0"><meta http-equiv=X-UA-Compatible content="IE=edge"><title>Country Finder | Global Nation &amp; Demographic Explorer</title><meta name=description content="Explore countries worldwide with real-time instant search, national flags, capitals, populations, languages, and currencies."><meta name=theme-color content=#0f172a><meta property=og:title content="Country Finder | Global Nation &amp; Demographic Explorer"><meta property=og:description content="Instant country search with detailed demographic profiles, flags, capitals, and currencies."><meta property=og:type content=website><meta property=og:url content=https://iberikofer.github.io/js-country-finder/><link rel=icon type=image/svg+xml href=/js-country-finder/favicon.f25c3872.svg><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel=stylesheet><link rel=stylesheet href=/js-country-finder/js-country-finder.20e80814.css><body>
+    <div class=app-container>
+      
+      <header class=app-header>
+        <div class=header-content>
+          <div class=header-badge aria-hidden=true>
+            <svg class=badge-icon viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2.2 stroke-linecap=round stroke-linejoin=round><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx=12 cy=10 r=3 /></svg>
+            <span>World Explorer</span>
+          </div>
+          <h1 class=main-title>Country Finder</h1>
+          <p class=subtitle>
+            Search for any nation to discover official names, capitals, demographics, languages, and flags.
+          </p>
+        </div>
+      </header>
+
+      
+      <main class=app-main id=main-content>
+        
+        <section class=search-section aria-label="Country Search">
+          <form class=search-form role=search onsubmit=event.preventDefault();>
+            <div class=search-input-wrapper>
+              <span class=search-icon aria-hidden=true>
+                <svg viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2.2 stroke-linecap=round stroke-linejoin=round><circle cx=11 cy=11 r=8 /><line x1=21 y1=21 x2=16.65 y2=16.65 /></svg>
+              </span>
+              <label for=search-box class=visually-hidden>Search for a country by name</label>
+              <input type=search id=search-box class=search-input placeholder="Search by country name (e.g. Ukraine, Canada, Japan)..." autocomplete=off spellcheck=false autofocus>
+              <button type=button id=clear-search-btn class=clear-btn aria-label="Clear search input" hidden>
+                <svg viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2.5 stroke-linecap=round stroke-linejoin=round><line x1=18 y1=6 x2=6 y2=18 /><line x1=6 y1=6 x2=18 y2=18 /></svg>
+              </button>
+            </div>
+          </form>
+
+          
+          <div id=search-status class=search-status aria-live=polite></div>
+        </section>
+
+        
+        <section class=results-section aria-label="Search Results">
+          
+          <ul class=country-list id=country-list role=list></ul>
+
+          
+          <div class=country-info id=country-info aria-live=polite></div>
+        </section>
+      </main>
+
+      
+      <footer class=app-footer role=contentinfo>
+        <p>
+          Data provided by open country intelligence &amp; REST Countries standards.
+          Crafted with modern Vanilla JS.
+        </p>
+        <p class=footer-links>
+          <a href=https://github.com/iberikofer/js-country-finder target=_blank rel="noopener noreferrer">
+            GitHub Repository
+          </a>
+        </p>
+      </footer>
+    </div>
+
+    
+    <script src=/js-country-finder/js-country-finder.50843a20.js type=module></script>
+  
+
