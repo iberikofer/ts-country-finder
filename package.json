@@ -1,33 +1,34 @@
 {
-	"name": "js-country-finder",
-	"version": "2.0.0",
-	"description": "",
-	"homepage": "https://iberikofer.github.io/js-country-finder",
-	"scripts": {
-		"start": "parcel src/*.html",
-		"build": "parcel build src/*.html --public-url /js-country-finder/"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/iberikofer/js-country-finder.git"
-	},
-	"keywords": [],
-	"author": "Alexander Repeta <alexander.repeta@gmail.com>",
-	"license": "ISC",
-	"bugs": {
-		"url": "https://github.com/iberikofer/js-country-finder/issues"
-	},
-	"dependencies": {
-		"lodash": "^4.17.21",
-		"lodash.debounce": "^4.0.8",
-		"modern-normalize": "^1.1.0",
-		"notiflix": "^3.2.6"
-	},
-	"devDependencies": {
-		"@parcel/transformer-sass": "^2.6.0",
-		"parcel": "^2.6.0",
-		"parcel-reporter-clean-dist": "^1.0.4",
-		"posthtml-include": "^1.7.4"
-	},
-	"browserslist": "> 0.5%, last 2 versions, not dead"
+  "name": "js-country-finder",
+  "version": "2.1.0",
+  "description": "Fast and responsive country search application built with Vanilla JS and REST Countries API",
+  "homepage": "https://iberikofer.github.io/js-country-finder",
+  "scripts": {
+    "start": "parcel src/*.html",
+    "build": "parcel build src/*.html --public-url /js-country-finder/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iberikofer/js-country-finder.git"
+  },
+  "keywords": [
+    "country-finder",
+    "rest-countries-api",
+    "vanilla-js",
+    "parcel"
+  ],
+  "author": "iberikofer",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/iberikofer/js-country-finder/issues"
+  },
+  "dependencies": {
+    "lodash.debounce": "^4.0.8",
+    "notiflix": "^3.2.8"
+  },
+  "devDependencies": {
+    "parcel": "^2.12.0",
+    "parcel-reporter-clean-dist": "^1.0.4"
+  },
+  "browserslist": "> 0.5%, last 2 versions, not dead"
 }
