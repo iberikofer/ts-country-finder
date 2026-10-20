@@ -140,61 +140,46 @@ export async function fetchCountries(name: string, signal?: AbortSignal): Promis
     throw new Error('NOT_FOUND');
   }
 
-  const encodedName = encodeURIComponent(query);
-  const endpoint = `${BASE_URL}/name/${encodedName}?fields=${FETCH_FIELDS}`;
-
-  try {
-    const response = await fetch(endpoint, { signal });
-
-    if (response.ok) {
-      const data: unknown = await response.json();
-
-      // REST Countries deprecation check: returns HTTP 200 with success: false
-      if (
-        typeof data === 'object' &&
-        data !== null &&
-        'success' in data &&
-        (data as { success: unknown }).success === false
-      ) {
-        console.warn('Remote API returned deprecation/error response. Using verified local dataset.');
-        const fallback = searchLocalCountries(query);
-        if (fallback.length === 0) {
-          throw new Error('NOT_FOUND');
-        }
-        return fallback;
-      }
-
-      if (Array.isArray(data) && data.length > 0) {
-        const filtered = (data as RawCountry[]).filter(c => !isExcludedCountry(c));
-        if (filtered.length === 0) {
-          throw new Error('NOT_FOUND');
-        }
-        return filtered.map(normalizeCountry);
-      }
-    }
-
-    if (response.status === 404) {
-      // Check fallback before rejecting
-      const fallback = searchLocalCountries(query);
-      if (fallback.length > 0) return fallback;
-      throw new Error('NOT_FOUND');
-    }
-
-    // On other HTTP error codes, attempt local dataset
-    const fallback = searchLocalCountries(query);
-    if (fallback.length > 0) return fallback;
-    throw new Error(`HTTP_${response.status}`);
-  } catch (error: unknown) {
-    if (error instanceof Error && error.name === 'AbortError') {
-      throw error; // Re-throw abort error to be handled by caller
-    }
-
-    // If network failed (offline, CORS, DNS), search local dataset
-    const fallback = searchLocalCountries(query);
-    if (fallback.length > 0) {
-      return fallback;
-    }
-
-    throw new Error('NOT_FOUND');
+  // Check cancellation before processing
+  if (signal?.aborted) {
+    const err = new Error('Aborted');
+    err.name = 'AbortError';
+    throw err;
   }
+
+  // If a custom API endpoint is provided that is not the deprecated restcountries.com service, attempt remote fetch
+  const isCustomEndpoint = Boolean(BASE_URL && !BASE_URL.includes('restcountries.com'));
+
+  if (isCustomEndpoint) {
+    const encodedName = encodeURIComponent(query);
+    const endpoint = `${BASE_URL}/name/${encodedName}?fields=${FETCH_FIELDS}`;
+
+    try {
+      const response = await fetch(endpoint, { signal });
+
+      if (response.ok) {
+        const data: unknown = await response.json();
+
+        if (Array.isArray(data) && data.length > 0) {
+          const filtered = (data as RawCountry[]).filter(c => !isExcludedCountry(c));
+          if (filtered.length > 0) {
+            return filtered.map(normalizeCountry);
+          }
+        }
+      }
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw error;
+      }
+      // On network failure or CORS errors, fall through to verified local dataset
+    }
+  }
+
+  // Use the verified, instant, zero-CORS embedded dataset
+  const fallback = searchLocalCountries(query);
+  if (fallback.length > 0) {
+    return fallback;
+  }
+
+  throw new Error('NOT_FOUND');
 }
