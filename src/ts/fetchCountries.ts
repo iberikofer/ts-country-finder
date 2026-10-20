@@ -1,22 +1,23 @@
-import localCountries from '../data/countries.js';
+import localCountries from '../data/countries';
+import type { Country, RawCountry, RawCurrency, RawLanguage } from '../types/country';
 
 const BASE_URL = process.env.REST_COUNTRIES_BASE_URL || 'https://restcountries.com/v3.1';
 const FETCH_FIELDS = 'name,capital,population,flags,languages,region,subregion,currencies';
 
-const EXCLUDED_CODES = new Set(['RU', 'RUS']);
-const EXCLUDED_NAMES = ['russia', 'russian federation', 'росія', 'россия'];
+const EXCLUDED_CODES = new Set<string>(['RU', 'RUS']);
+const EXCLUDED_NAMES: readonly string[] = ['russia', 'russian federation', 'росія', 'россия'];
 
 /**
  * Checks whether a country matches the excluded entity.
  */
-function isExcludedCountry(country) {
+function isExcludedCountry(country: RawCountry | null | undefined): boolean {
   if (!country) return true;
-  const alpha2 = (country.alpha2Code || country.cca2 || '').toUpperCase();
-  const alpha3 = (country.alpha3Code || country.cca3 || '').toUpperCase();
+  const alpha2 = String(country.alpha2Code || country.cca2 || '').toUpperCase();
+  const alpha3 = String(country.alpha3Code || country.cca3 || '').toUpperCase();
   if (EXCLUDED_CODES.has(alpha2) || EXCLUDED_CODES.has(alpha3)) return true;
 
   const rawName =
-    typeof country.name === 'object'
+    typeof country.name === 'object' && country.name !== null
       ? `${country.name.official || ''} ${country.name.common || ''}`
       : String(country.name || '');
   const nameLower = rawName.toLowerCase();
@@ -27,16 +28,16 @@ function isExcludedCountry(country) {
  * Normalizes country objects from either REST Countries API v2/v3.1 or local dataset
  * into a standardized model for the application.
  */
-function normalizeCountry(country) {
+function normalizeCountry(country: RawCountry): Country {
   // Normalize Name
   const officialName =
-    typeof country.name === 'object'
-      ? country.name.official || country.name.common
-      : country.name;
+    typeof country.name === 'object' && country.name !== null
+      ? country.name.official || country.name.common || 'Unknown'
+      : String(country.name || 'Unknown');
   const commonName =
-    typeof country.name === 'object'
-      ? country.name.common || country.name.official
-      : country.name;
+    typeof country.name === 'object' && country.name !== null
+      ? country.name.common || country.name.official || officialName
+      : String(country.name || officialName);
 
   // Normalize Flags
   const flags = {
@@ -55,7 +56,10 @@ function normalizeCountry(country) {
   // Normalize Languages
   let languages = 'N/A';
   if (Array.isArray(country.languages)) {
-    languages = country.languages.map(l => l.name || l).join(', ');
+    languages = country.languages
+      .map((l: string | RawLanguage) => (typeof l === 'object' && l !== null && 'name' in l ? l.name : String(l)))
+      .filter(Boolean)
+      .join(', ');
   } else if (typeof country.languages === 'object' && country.languages !== null) {
     languages = Object.values(country.languages).join(', ');
   }
@@ -64,11 +68,13 @@ function normalizeCountry(country) {
   let currencies = 'N/A';
   if (Array.isArray(country.currencies)) {
     currencies = country.currencies
-      .map(c => (c.symbol ? `${c.name} (${c.symbol})` : c.name))
+      .map((c: RawCurrency) => (c && c.symbol ? `${c.name} (${c.symbol})` : c?.name || ''))
+      .filter(Boolean)
       .join(', ');
   } else if (typeof country.currencies === 'object' && country.currencies !== null) {
     currencies = Object.values(country.currencies)
-      .map(c => (c.symbol ? `${c.name} (${c.symbol})` : c.name))
+      .map((c: RawCurrency) => (c && c.symbol ? `${c.name} (${c.symbol})` : c?.name || ''))
+      .filter(Boolean)
       .join(', ');
   }
 
@@ -80,8 +86,8 @@ function normalizeCountry(country) {
     commonName,
     flags,
     capital,
-    languages,
-    currencies,
+    languages: languages || 'N/A',
+    currencies: currencies || 'N/A',
     population,
     region: country.region || 'N/A',
     subregion: country.subregion || 'N/A',
@@ -92,18 +98,18 @@ function normalizeCountry(country) {
 /**
  * Searches local dataset as a resilient fallback or primary search engine.
  */
-function searchLocalCountries(query) {
+function searchLocalCountries(query: string): Country[] {
   const normalizedQuery = query.trim().toLowerCase();
   if (!normalizedQuery) return [];
 
-  const matched = localCountries.filter(item => {
+  const matched = (localCountries as RawCountry[]).filter(item => {
     if (isExcludedCountry(item)) return false;
 
-    const common = (typeof item.name === 'object' ? item.name.common : item.name) || '';
-    const official = (typeof item.name === 'object' ? item.name.official : item.name) || '';
+    const common = (typeof item.name === 'object' && item.name !== null ? item.name.common : String(item.name || '')) || '';
+    const official = (typeof item.name === 'object' && item.name !== null ? item.name.official : String(item.name || '')) || '';
     const native = item.nativeName || '';
-    const alpha2 = item.alpha2Code || item.cca2 || '';
-    const alpha3 = item.alpha3Code || item.cca3 || '';
+    const alpha2 = String(item.alpha2Code || item.cca2 || '');
+    const alpha3 = String(item.alpha3Code || item.cca3 || '');
 
     return (
       common.toLowerCase().includes(normalizedQuery) ||
@@ -121,11 +127,11 @@ function searchLocalCountries(query) {
  * Fetches countries by name with async/await, AbortController support,
  * error handling, and guaranteed fallback to reliable country data.
  *
- * @param {string} name - Country name to search
- * @param {AbortSignal} [signal] - Optional AbortSignal for request cancellation
- * @returns {Promise<Array>} List of normalized country objects
+ * @param name - Country name to search
+ * @param signal - Optional AbortSignal for request cancellation
+ * @returns List of normalized country objects
  */
-export async function fetchCountries(name, signal) {
+export async function fetchCountries(name: string, signal?: AbortSignal): Promise<Country[]> {
   const query = name.trim();
   if (!query) return [];
 
@@ -141,10 +147,15 @@ export async function fetchCountries(name, signal) {
     const response = await fetch(endpoint, { signal });
 
     if (response.ok) {
-      const data = await response.json();
+      const data: unknown = await response.json();
 
       // REST Countries deprecation check: returns HTTP 200 with success: false
-      if (data && data.success === false) {
+      if (
+        typeof data === 'object' &&
+        data !== null &&
+        'success' in data &&
+        (data as { success: unknown }).success === false
+      ) {
         console.warn('Remote API returned deprecation/error response. Using verified local dataset.');
         const fallback = searchLocalCountries(query);
         if (fallback.length === 0) {
@@ -154,7 +165,7 @@ export async function fetchCountries(name, signal) {
       }
 
       if (Array.isArray(data) && data.length > 0) {
-        const filtered = data.filter(c => !isExcludedCountry(c));
+        const filtered = (data as RawCountry[]).filter(c => !isExcludedCountry(c));
         if (filtered.length === 0) {
           throw new Error('NOT_FOUND');
         }
@@ -173,8 +184,8 @@ export async function fetchCountries(name, signal) {
     const fallback = searchLocalCountries(query);
     if (fallback.length > 0) return fallback;
     throw new Error(`HTTP_${response.status}`);
-  } catch (error) {
-    if (error.name === 'AbortError') {
+  } catch (error: unknown) {
+    if (error instanceof Error && error.name === 'AbortError') {
       throw error; // Re-throw abort error to be handled by caller
     }
 

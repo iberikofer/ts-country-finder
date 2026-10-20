@@ -1,34 +1,38 @@
 {
-  "name": "js-country-finder",
+  "name": "ts-country-finder",
   "version": "2.1.0",
-  "description": "Fast and responsive country search application built with Vanilla JS and REST Countries API",
-  "homepage": "https://iberikofer.github.io/js-country-finder",
+  "description": "Fast and responsive country search application built with TypeScript and REST Countries API",
+  "homepage": "https://iberikofer.github.io/ts-country-finder",
   "scripts": {
     "start": "parcel src/*.html",
-    "build": "parcel build src/*.html --public-url /js-country-finder/"
+    "build": "tsc --noEmit && parcel build src/*.html --public-url /ts-country-finder/",
+    "typecheck": "tsc --noEmit"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/iberikofer/js-country-finder.git"
+    "url": "git+https://github.com/iberikofer/ts-country-finder.git"
   },
   "keywords": [
     "country-finder",
     "rest-countries-api",
-    "vanilla-js",
+    "typescript",
     "parcel"
   ],
   "author": "iberikofer",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/iberikofer/js-country-finder/issues"
+    "url": "https://github.com/iberikofer/ts-country-finder/issues"
   },
   "dependencies": {
     "lodash.debounce": "^4.0.8",
     "notiflix": "^3.2.8"
   },
   "devDependencies": {
+    "@types/lodash.debounce": "^4.0.9",
+    "@types/node": "^26.6.5",
     "parcel": "^2.12.0",
-    "parcel-reporter-clean-dist": "^1.0.4"
+    "parcel-reporter-clean-dist": "^1.0.4",
+    "typescript": "^7.0.2"
   },
   "browserslist": "> 0.5%, last 2 versions, not dead"
 }

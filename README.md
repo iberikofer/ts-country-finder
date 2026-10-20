@@ -30,11 +30,11 @@ An interactive, responsive web application for searching and exploring country p
 
 ## 🛠️ Tech Stack
 
-- **Core**: Vanilla JavaScript (ES6+ Modules), HTML5 Semantics
+- **Core**: TypeScript (Strict Mode, ES2022), HTML5 Semantics
 - **Styling**: Vanilla CSS3 (CSS Variables, Flexbox, CSS Grid, Glassmorphism)
 - **Bundler**: [Parcel 2](https://parceljs.org/)
 - **Utilities**:
-  - `lodash.debounce`: Debounced input handling
+  - `lodash.debounce` & `@types/lodash.debounce`: Debounced input handling
   - `notiflix`: Modern toast notifications
 - **Data Source**: REST Countries v3.1 Standards / Open Country Intelligence
 - **CI/CD**: GitHub Actions (`deploy.yml` on Ubuntu with Node 20 LTS)
@@ -52,8 +52,8 @@ An interactive, responsive web application for searching and exploring country p
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/iberikofer/js-country-finder.git
-   cd js-country-finder
+   git clone https://github.com/iberikofer/ts-country-finder.git
+   cd ts-country-finder
    ```
 
 2. **Install dependencies cleanly:**
@@ -78,14 +78,15 @@ An interactive, responsive web application for searching and exploring country p
 | Command | Description |
 | :--- | :--- |
 | `npm start` | Starts the Parcel development server with Hot Module Replacement (HMR) at `http://localhost:1234` |
-| `npm run build` | Bundles and optimizes the production build into the `dist/` directory with public URL configured for GitHub Pages |
+| `npm run typecheck` | Validates TypeScript types across the entire project (`tsc --noEmit`) |
+| `npm run build` | Runs type checking and bundles the production build into the `dist/` directory with public URL configured for GitHub Pages |
 
 ---
 
 ## 📁 Project Structure
 
 ```
-js-country-finder/
+ts-country-finder/
 ├── .github/
 │   └── workflows/
 │       └── deploy.yml          # Automated CI/CD pipeline for GitHub Pages
@@ -93,12 +94,15 @@ js-country-finder/
 │   ├── css/
 │   │   └── styles.css          # Design system tokens, glassmorphism, responsive styles
 │   ├── data/
-│   │   └── countries.js        # Normalized country intelligence fallback dataset
-│   ├── js/
-│   │   └── fetchCountries.js   # Pure async/await API & data resolution module
+│   │   └── countries.ts        # Normalized country intelligence fallback dataset
+│   ├── ts/
+│   │   └── fetchCountries.ts   # Pure async/await API & data resolution module
+│   ├── types/
+│   │   ├── country.ts          # Strongly-typed Country and RawCountry interfaces
+│   │   └── declarations.d.ts   # Asset module declarations (CSS, SVG)
 │   ├── favicon.svg             # Custom vector globe & compass favicon
 │   ├── index.html              # Semantic HTML5 document with a11y landmarks
-│   └── index.js                # App state, DOM controllers, and event orchestration
+│   └── index.ts                # App state, DOM controllers, and event orchestration
 ├── .editorconfig               # Editor consistency settings
 ├── .env.example                # Environment configuration template
 ├── .gitignore                  # Stack-specific Git exclusion rules
@@ -106,6 +110,7 @@ js-country-finder/
 ├── .parcelrc                   # Parcel bundler configuration
 ├── .prettierrc                 # Prettier code formatting rules
 ├── package.json                # Project dependencies and npm scripts
+├── tsconfig.json               # TypeScript compiler configuration (strict mode)
 └── README.md                   # Comprehensive project documentation
 ```
 

@@ -1,7 +1,8 @@
 import './css/styles.css';
 import debounce from 'lodash.debounce';
-import { fetchCountries } from './js/fetchCountries.js';
+import { fetchCountries } from './ts/fetchCountries';
 import Notiflix from 'notiflix';
+import type { Country } from './types/country';
 
 // Initialize Notiflix Theme
 Notiflix.Notify.init({
@@ -35,32 +36,36 @@ Notiflix.Notify.init({
 const DEBOUNCE_DELAY = 300;
 
 // DOM Elements
-const searchInput = document.querySelector('#search-box');
-const clearBtn = document.querySelector('#clear-search-btn');
-const countryList = document.querySelector('#country-list');
-const countryInfo = document.querySelector('#country-info');
-const searchStatus = document.querySelector('#search-status');
+const searchInput = document.querySelector<HTMLInputElement>('#search-box');
+const clearBtn = document.querySelector<HTMLButtonElement>('#clear-search-btn');
+const countryList = document.querySelector<HTMLUListElement>('#country-list');
+const countryInfo = document.querySelector<HTMLDivElement>('#country-info');
+const searchStatus = document.querySelector<HTMLDivElement>('#search-status');
 
 // State
-let abortController = null;
-let currentResults = [];
+let abortController: AbortController | null = null;
+let currentResults: Country[] = [];
 
 // Event Listeners
-searchInput.addEventListener('input', debounce(onInput, DEBOUNCE_DELAY));
-searchInput.addEventListener('input', toggleClearButton);
+if (searchInput) {
+  searchInput.addEventListener('input', debounce(onInput, DEBOUNCE_DELAY));
+  searchInput.addEventListener('input', toggleClearButton);
+}
 
 if (clearBtn) {
   clearBtn.addEventListener('click', onClearClick);
 }
 
-countryList.addEventListener('click', onCountryItemClick);
-countryList.addEventListener('keydown', onCountryItemKeyDown);
+if (countryList) {
+  countryList.addEventListener('click', onCountryItemClick);
+  countryList.addEventListener('keydown', onCountryItemKeyDown);
+}
 
 /**
  * Toggles the clear button visibility based on input length
  */
-function toggleClearButton() {
-  if (clearBtn) {
+function toggleClearButton(): void {
+  if (clearBtn && searchInput) {
     clearBtn.hidden = searchInput.value.trim().length === 0;
   }
 }
@@ -68,31 +73,34 @@ function toggleClearButton() {
 /**
  * Handles clearing the search bar and results
  */
-function onClearClick() {
+function onClearClick(): void {
   if (abortController) {
     abortController.abort();
     abortController = null;
   }
-  searchInput.value = '';
+  if (searchInput) {
+    searchInput.value = '';
+    searchInput.focus();
+  }
   toggleClearButton();
   clearMarkup();
-  searchInput.focus();
 }
 
 /**
  * Clears DOM elements and search state
  */
-export function clearMarkup() {
-  countryList.innerHTML = '';
-  countryInfo.innerHTML = '';
-  searchStatus.innerHTML = '';
+export function clearMarkup(): void {
+  if (countryList) countryList.innerHTML = '';
+  if (countryInfo) countryInfo.innerHTML = '';
+  if (searchStatus) searchStatus.innerHTML = '';
   currentResults = [];
 }
 
 /**
  * Renders loading status
  */
-function showLoading() {
+function showLoading(): void {
+  if (!searchStatus) return;
   searchStatus.innerHTML = `
     <div class="loader-container">
       <span class="spinner" aria-hidden="true"></span>
@@ -104,15 +112,16 @@ function showLoading() {
 /**
  * Removes loading status
  */
-function hideLoading() {
-  searchStatus.innerHTML = '';
+function hideLoading(): void {
+  if (searchStatus) searchStatus.innerHTML = '';
 }
 
 /**
  * Main input handler with AbortController and async/await
  */
-async function onInput(event) {
-  const query = event.target.value.trim();
+async function onInput(event: Event): Promise<void> {
+  const target = event.target as HTMLInputElement | null;
+  const query = target ? target.value.trim() : '';
 
   // Cancel any existing in-flight request
   if (abortController) {
@@ -132,9 +141,9 @@ async function onInput(event) {
     hideLoading();
     currentResults = data;
     handleSearchResults(data);
-  } catch (error) {
+  } catch (error: unknown) {
     // If request was cancelled by subsequent typing, ignore
-    if (error.name === 'AbortError') {
+    if (error instanceof Error && error.name === 'AbortError') {
       return;
     }
     hideLoading();
@@ -148,7 +157,7 @@ async function onInput(event) {
 /**
  * Dispatches results according to length
  */
-function handleSearchResults(data) {
+function handleSearchResults(data: Country[]): void {
   clearMarkup();
   currentResults = data;
 
@@ -157,16 +166,16 @@ function handleSearchResults(data) {
       'Too many matches found. Please enter a more specific name. 🤔'
     );
   } else if (data.length >= 2) {
-    countryList.innerHTML = buildCountryListMarkup(data);
+    if (countryList) countryList.innerHTML = buildCountryListMarkup(data);
   } else if (data.length === 1) {
-    countryInfo.innerHTML = buildCountryDetailsMarkup(data[0]);
+    if (countryInfo) countryInfo.innerHTML = buildCountryDetailsMarkup(data[0]);
   }
 }
 
 /**
  * Builds HTML for 2-10 matching countries
  */
-function buildCountryListMarkup(countries) {
+function buildCountryListMarkup(countries: Country[]): string {
   return countries
     .map((country, index) => {
       const { officialName, commonName, flags, region } = country;
@@ -197,7 +206,7 @@ function buildCountryListMarkup(countries) {
 /**
  * Builds detailed HTML markup for a single country
  */
-function buildCountryDetailsMarkup(country) {
+function buildCountryDetailsMarkup(country: Country): string {
   const {
     officialName,
     commonName,
@@ -268,22 +277,26 @@ function buildCountryDetailsMarkup(country) {
 /**
  * Handle click on a country list item to display its details
  */
-function onCountryItemClick(event) {
-  const item = event.target.closest('.country-list-item');
+function onCountryItemClick(event: Event): void {
+  const target = event.target as HTMLElement | null;
+  const item = target?.closest<HTMLElement>('.country-list-item');
   if (!item) return;
 
-  const index = item.dataset.index;
+  const indexStr = item.dataset.index;
+  if (indexStr === undefined) return;
+
+  const index = parseInt(indexStr, 10);
   const selectedCountry = currentResults[index];
   if (selectedCountry) {
-    countryList.innerHTML = '';
-    countryInfo.innerHTML = buildCountryDetailsMarkup(selectedCountry);
+    if (countryList) countryList.innerHTML = '';
+    if (countryInfo) countryInfo.innerHTML = buildCountryDetailsMarkup(selectedCountry);
   }
 }
 
 /**
  * Handle keyboard (Enter/Space) selection on list items for a11y
  */
-function onCountryItemKeyDown(event) {
+function onCountryItemKeyDown(event: KeyboardEvent): void {
   if (event.key === 'Enter' || event.key === ' ') {
     event.preventDefault();
     onCountryItemClick(event);
