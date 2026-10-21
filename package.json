@@ -4,6 +4,7 @@
   "description": "Fast and responsive country search application built with TypeScript and REST Countries API",
   "homepage": "https://iberikofer.github.io/ts-country-finder",
   "scripts": {
+    "dev": "parcel src/*.html",
     "start": "parcel src/*.html",
     "build": "tsc --noEmit && parcel build src/*.html --public-url /ts-country-finder/",
     "typecheck": "tsc --noEmit"
